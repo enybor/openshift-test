@@ -20,7 +20,9 @@ spec:
             timeout(time: 20, unit: 'MINUTES') 
           }
           stages {
-            println('Test')
+            stage('test') {
+              println('Test')
+            }
           }
         }
     type: JenkinsPipeline
