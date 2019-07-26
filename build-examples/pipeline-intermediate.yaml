@@ -1,0 +1,66 @@
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "pipeline-intermediate-build"
+spec:
+  runPolicy: "Serial"
+  strategy:
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        def buildName = 'pipeline-intermediate-docker-build'
+        pipeline {
+          agent {
+            label "master"
+          }
+          stages {
+            stage('Create Image Builder') {
+              when {
+                  expression {
+                      openshift.withCluster() {
+                        openshift.withProject() {
+                          return !openshift.selector("bc", buildName).exists();
+                        }
+                      }
+                  }
+              }
+              steps {
+                  script {
+                      openshift.withCluster() {
+                          openshift.withProject() {
+                              def build = openshift.newBuild("https://github.com/lysenkoivan/pyjwt_example", "--allow-missing-imagestream-tags=true", "--name=${buildName}", "--to=jenkins-intermediate-pyjwt-app", "-e SECRET=jenkinsintermediatesecret")
+                              def builds = build.narrow("bc").related("builds")
+                              timeout(5) {
+                                builds.untilEach(1) {
+                                  return (it.object().status.phase == "Complete")
+                                }
+                              }
+                          }
+                      }
+                  }
+              }
+            }
+            stage('Build Image') {
+              steps {
+                script {
+                  openshift.withCluster() {
+                    openshift.withProject() {
+                      echo "Using project: ${openshift.project()}"
+                      openshift.selector("bc", "${buildName}").startBuild("--wait=true")
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+    type: JenkinsPipeline
+---
+kind: "ImageStream"
+apiVersion: "v1"
+metadata:
+  name: "jenkins-intermediate-pyjwt-app"
+---
+kind: "ImageStream"
+apiVersion: "v1"
+metadata:
+  name: "python"

@@ -1,0 +1,14 @@
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "pipeline-novice-build"
+spec:
+  runPolicy: "Serial"
+  strategy:
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        node('master') {
+          stage 'build'
+          openshiftBuild(buildConfig: 'docker-build', showBuildLogs: 'true')
+        }
+    type: JenkinsPipeline

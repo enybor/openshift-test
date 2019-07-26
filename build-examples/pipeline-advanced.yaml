@@ -1,0 +1,79 @@
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "pipeline-advanced-build"
+spec:
+  runPolicy: "Serial"
+  strategy:
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        def buildDir = 'build-dir'
+        def buildName = 'pipeline-advanced-docker-build'
+        pipeline {
+          agent {
+            label "master"
+          }
+          stages {
+            stage("Clone Source") {
+              steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']],
+                    extensions: [
+                      [$class: 'RelativeTargetDirectory', relativeTargetDir: buildDir]
+                    ],
+                    userRemoteConfigs: [[url: 'https://github.com/lysenkoivan/pyjwt_example']]
+                ])
+              }
+            }
+            stage('Create Image Builder') {
+              when {
+                  expression {
+                      openshift.withCluster() {
+                        openshift.withProject() {
+                          return !openshift.selector("bc", buildName).exists();
+                        }
+                      }
+                  }
+              }
+              steps {
+                  script {
+                      openshift.withCluster() {
+                          openshift.withProject() {
+                            dir(buildDir) {
+                              def build = openshift.newBuild(".", "--name=${buildName}", "--allow-missing-imagestream-tags=true", "--to=jenkins-advanced-pyjwt-app", "-e SECRET=jenkinsadvancedsecret")
+                              def builds = build.narrow("bc").related("builds")
+                              timeout(5) {
+                                builds.untilEach(1) {
+                                  return (it.object().status.phase == "Complete")
+                                }
+                              }
+                            }
+                          }
+                      }
+                  }
+              }
+            }
+            stage('Build Image') {
+              steps {
+                script {
+                  openshift.withCluster() {
+                    openshift.withProject() {
+                      openshift.selector("bc", "${buildName}").startBuild("--wait=true")
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+    type: JenkinsPipeline
+---
+kind: "ImageStream"
+apiVersion: "v1"
+metadata:
+  name: "jenkins-advanced-pyjwt-app"
+---
+kind: "ImageStream"
+apiVersion: "v1"
+metadata:
+  name: "python"

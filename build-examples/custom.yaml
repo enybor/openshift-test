@@ -1,0 +1,23 @@
+kind: "ImageStream"
+apiVersion: "v1"
+metadata:
+  name: "custom-pyjwt-app"
+---
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "custom-build"
+spec:
+  runPolicy: "Serial"
+  strategy:
+    customStrategy:
+      from:
+        kind: "DockerImage"
+        name: "ilysenkogd/pyjwt:demo"
+      env:
+        - name: "SECRET"
+          value: "customsecret"
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "custom-pyjwt-app:latest"

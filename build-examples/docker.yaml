@@ -1,0 +1,24 @@
+kind: "ImageStream"
+apiVersion: "v1"
+metadata:
+  name: "pyjwt-app"
+---
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "docker-build"
+spec:
+  runPolicy: "Serial"
+  source:
+    git:
+      uri: "https://github.com/lysenkoivan/pyjwt_example"
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      env:
+        - name: "SECRET"
+          value: "dockersecret"
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "pyjwt-app:latest"

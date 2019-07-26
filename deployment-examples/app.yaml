@@ -1,0 +1,4 @@
+kind: "DeploymentConfig"
+apiVersion: "v1"
+metadata:
+  name: "deploy"
