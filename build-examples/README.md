@@ -1,7 +1,19 @@
-# Build Creation
+# Build Config Types
+
+### Prerequisites
+- login as you developer user
+- create your own project
+
+### Example:
+#### Use `developer/developer` credentials:
+```
+oc login
+oc new-project testproject
+oc project testproject
+```
 
 ## Docker Build
-#### Steps:
+#### Creation Steps:
 ##### Create our resources:
 ```
 oc create -f docker.yml
@@ -20,7 +32,7 @@ oc get build
 ```
 
 ## Pipeline Build
-#### Novice Steps:
+#### Novice Creation Steps:
 
 ##### Make the Docker Build without two last steps.
 
@@ -41,7 +53,7 @@ oc start-build pipeline-novice-build
 oc get build
 ```
 
-#### Intermediate and Advanced Steps:
+#### Intermediate and Advanced Creation Steps:
 ##### Create our resources:
  ```
 oc create -f pipeline-intermediate.yml / oc create -f pipeline-advanced.yml
@@ -61,8 +73,8 @@ oc get build
 
 ## S2I Build
  
-#### Steps:
-##### Create an ImageStream for python 
+#### Creation Steps:
+##### Create an ImageStream for python:
 ```
 oc create is python
 ```
@@ -97,7 +109,7 @@ If we want to clean:
 oc policy remove-role-from-group system:build-strategy-custom system:authenticated
 ```
  
-#### Steps:
+#### Creation Steps:
 ##### Create our resources: 
 ```
 oc create -f custom.yml
@@ -110,7 +122,7 @@ oc get build
 ```
 oc start-build custom-build
 ```
-##### Check that our build is ok: 
+##### Creation Check that our build is ok: 
 ```
 oc get build
 ```
