@@ -1,4 +1,31 @@
+kind: "Service"
+apiVersion: "v1"
+metadata:
+  name: pyjwt-app-svc
+spec:
+  selector:
+    name: pyjwt-app-dc
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+---
 kind: "DeploymentConfig"
 apiVersion: "v1"
 metadata:
-  name: "deploy"
+  name: "pyjwt-app-dc"
+spec:
+  template:
+    metadata:
+      labels:
+        name: "pyjwt-app-dc"
+    spec:
+      containers:
+        - name: "pyjwt-app"
+          image: "ilysenkogd/pyjwt:demo"
+          ports:
+            - containerPort: 5000
+              protocol: "TCP"
+  replicas: 5
+  strategy:
+    type: "Rolling"
